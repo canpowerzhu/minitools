@@ -1,0 +1,6 @@
+server.name: kibana
+server.host: "0"
+elasticsearch.hosts: [ "http://es-node1:9201" ]
+xpack.monitoring.ui.container.elasticsearch.enabled: true
+server.basePath: "/kibana"
+i18n.locale: "zh-CN"  

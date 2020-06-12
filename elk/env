@@ -1,0 +1,5 @@
+ES_JVM_OPTS=-Xms1024m -Xmx1024m
+ES_VERSION=7.4.2
+ES_PATH=/application/docker-data/es
+KIBANA_VERSION=7.4.2
+

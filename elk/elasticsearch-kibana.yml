@@ -1,0 +1,100 @@
+version: '3' 
+services:
+    es-node1:
+      image: elasticsearch:${ES_VERSION}  
+      container_name: es-node1
+      restart: always
+      privileged: true
+      environment:
+        - ES_JAVA_OPTS=${ES_JVM_OPTS}
+      ports:
+        - "9201:9201"
+        - "9301:9301"
+      volumes:
+        - ${ES_PATH}/node1/logs:/usr/share/elasticsearch/logs
+        - ${ES_PATH}/node1/data:/usr/share/elasticsearch/data
+        - ${ES_PATH}/node1/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml 
+      networks: 
+        - elk
+    es-node2:
+      image: elasticsearch:${ES_VERSION}
+      container_name: es-node2
+      restart: always
+      privileged: true
+      environment:
+        - ES_JAVA_OPTS=${ES_JVM_OPTS}
+      ports:
+        - "9202:9202"
+        - "9302:9302"
+      volumes:
+        - ${ES_PATH}/node2/logs:/usr/share/elasticsearch/logs
+        - ${ES_PATH}/node2/data:/usr/share/elasticsearch/data
+        - ${ES_PATH}/node2/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml 
+      networks: 
+        - elk
+    es-node3:
+      image: elasticsearch:${ES_VERSION}
+      container_name: es-node3
+      restart: always
+      privileged: true
+      environment:
+        - ES_JAVA_OPTS=${ES_JVM_OPTS}
+      ports:
+        - "9203:9203"
+        - "9303:9303"
+      volumes:
+        - ${ES_PATH}/node3/logs:/usr/share/elasticsearch/logs
+        - ${ES_PATH}/node3/data:/usr/share/elasticsearch/data
+        - ${ES_PATH}/node3/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml 
+      networks: 
+        - elk
+    cerebro:
+      image: lmenezes/cerebro
+      container_name: grayCerebro
+      ports:
+        - "9000:9000"
+      command:
+        - -Dhosts.0.host=http://es-node1:9201
+      networks:
+        - elk
+    kibana:
+      container_name: grayKibana
+      image: kibana:${KIBANA_VERSION}
+      restart: always
+      environment:
+        - ELASTICSEARCH_URL=http://es-node1:9200
+        - SERVER_BASEPATH="/kibana"
+      ports:
+        - "5601:5601"
+      volumes:
+          - /application/docker-data/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      links:
+          - es-node1
+          - es-node2
+          - es-node3
+      depends_on:
+        - es-node1
+        - es-node2
+        - es-node3
+      networks: 
+        - elk
+    openresty:
+        image: openresty/openresty
+        container_name: grayOpenresty
+        restart: unless-stopped
+        volumes:
+            - /application/docker-data/openresty/conf.d:/etc/nginx/conf.d
+            - /application/docker-data/openresty/logs:/usr/local/openresty/nginx/logs
+        ports:
+            - "80:80"
+            - "443:443"
+        links:
+            - kibana
+        depends_on:
+            - kibana
+        networks: 
+            - elk
+networks: 
+  elk:
+    external: true
+    
